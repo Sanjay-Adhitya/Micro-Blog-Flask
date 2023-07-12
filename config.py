@@ -13,4 +13,5 @@ class Config(object):
     MAIL_ADMIN="cellsplant5@gmail.com"
     MAIL_PASSWORD="@1Asdf0p9o8i7uy"
     PASS_CODE = "wpkxgwtoonodfeig"
-
+    PASS_RESET_SUB = "Password Reset Mail"
+    PASS_RESET_BODY = ""

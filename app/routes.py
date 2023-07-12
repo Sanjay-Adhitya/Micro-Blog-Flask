@@ -6,6 +6,7 @@ from flask import request
 
 from app import app, db
 from app.models import User, Post
+from app.handle_email import send_mail
 
 @app.route('/')
 def index():
@@ -156,3 +157,19 @@ def explore():
     return json.dumps({
         "posts":return_posts
     })
+
+@app.route('/reset_password_request/<email>', methods=['GET', 'POST'])
+def reset_password_request(email):
+    if current_user.is_authenticated:
+        return {"msg":"You are Authorized"}
+    user = User.query.filter_by(email=email).first()
+    if user:
+        send_mail(  
+            app.config['MAIL_ADMIN'], 
+            user.email, app.config['PASS_RESET_SUB'], 
+            app.config['PASS_RESET_BODY'],
+            app.config['MAIL_SERVER'], 
+            app.config['PASS_CODE'], 
+            MAIL_PORT=app.config['MAIL_PORT']
+        )
+    return {"msg":"sent a mail to {}".format(str(user.email))}
