@@ -1,15 +1,32 @@
-import json
+import json, os
 from flask import request #, redirect
 from app import app, db
 from datetime import datetime
 
-from flask_login import current_user, login_user, logout_user
-from app.models import User
+from flask_login import current_user, login_user, logout_user, login_required
+from app.models import User, Post
 
 @app.route('/')
 def index():
-    a = {"key":"value"}
-    return json.dumps(a)
+    posts = current_user.followed_posts().all()
+    # page = request.args.get('page', 1, type=int)
+    # posts = current_user.followed_posts().paginate(
+    #     page=page, per_page=app.config['POSTS_PER_PAGE'], 
+    #     error_out=False).items
+    return_posts = []
+    for post in posts:
+        return_posts.append(
+            {
+                "user_id":post.user_id,
+                "body":post.body,
+                "user_name":User.query.filter_by(id=post.user_id).first().username
+            }
+        )
+    
+    return json.dumps({
+        "posts":return_posts,
+        "currentUser":str(current_user.username)
+    })
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -51,22 +68,9 @@ def register():
     # TODO Create a user with name and email
     user = User(username=username, email=email)
     user.set_password(password)
-    print(user)
     db.session.add(user)
     db.session.commit()
     return {"msg":"Signed up {}".format(user.username)}
-    
-def validate_username(username):
-        user = User.query.filter_by(username=username).first()
-        if user is not None:
-            return True
-        return False
-
-def validate_email(email):
-        user = User.query.filter_by(email=email).first()
-        if user is not None:
-            return True
-        return False
 
 @app.route('/getusr', methods=['GET'])
 def get_all_user():
@@ -79,3 +83,75 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
+
+def validate_username(username):
+        user = User.query.filter_by(username=username).first()
+        if user is not None:
+            return True
+        return False
+
+def validate_email(email):
+        user = User.query.filter_by(email=email).first()
+        if user is not None:
+            return True
+        return False
+
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
+    # get user obj from name
+    user = User.query.filter_by(username=username).first()
+    if user is None:return {"msg":"invalid"}
+    if user == current_user:return {"msg":"You cannot follow yourself!"}
+    current_user.follow(user)
+    db.session.commit()
+    return {"msg":"You are following {} yah!".format(user.username)}
+
+@app.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        return {"msg":"invalid"}
+    if user == current_user:
+        {"msg":"You cannot Un Follow yourself!"}
+    current_user.unfollow(user)
+    db.session.commit()
+    return {"msg":"You are not following {} anymore :)".format(user.username)}
+
+@app.route('/user/<username>')
+@login_required
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = user.followed_posts().all()
+    return_posts = []
+    for post in posts:
+        return_posts.append(
+            {
+                "user_id":post.user_id,
+                "body":post.body,
+                "user_name":User.query.filter_by(id=post.user_id).first().username
+            }
+        )
+    
+    return json.dumps({
+        "posts":return_posts,
+        "currentUser":str(user.username)
+    })
+
+@app.route('/explore')
+@login_required
+def explore():
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return_posts =[]
+    for post in posts:
+        return_posts.append(
+            {
+                "user_id":post.user_id,
+                "body":post.body,
+                "user_name":User.query.filter_by(id=post.user_id).first().username
+            }
+        )
+    return json.dumps({
+        "posts":return_posts
+    })
