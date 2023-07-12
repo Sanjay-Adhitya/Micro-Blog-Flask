@@ -1,9 +1,10 @@
 import json, os
-from flask import request #, redirect
-from app import app, db
 from datetime import datetime
 
 from flask_login import current_user, login_user, logout_user, login_required
+from flask import request 
+
+from app import app, db
 from app.models import User, Post
 
 @app.route('/')

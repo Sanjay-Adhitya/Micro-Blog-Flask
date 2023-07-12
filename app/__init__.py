@@ -8,7 +8,6 @@ from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 app.config.from_object(Config)
-# app.config['SQLALCHEMY_DATABASE_URI']
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager(app)
