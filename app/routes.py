@@ -8,6 +8,24 @@ from app import app, db
 from app.models import User, Post
 from app.handle_email import send_mail
 
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+        db.session.commit()
+
+def validate_username(username):
+        user = User.query.filter_by(username=username).first()
+        if user is not None:
+            return True
+        return False
+
+def validate_email(email):
+        user = User.query.filter_by(email=email).first()
+        if user is not None:
+            return True
+        return False
+
 @app.route('/')
 def index():
     posts = current_user.followed_posts().all()
@@ -80,23 +98,22 @@ def get_all_user():
     print(a)
     return {}
 
-@app.before_request
-def before_request():
-    if current_user.is_authenticated:
-        current_user.last_seen = datetime.utcnow()
-        db.session.commit()
-
-def validate_username(username):
-        user = User.query.filter_by(username=username).first()
-        if user is not None:
-            return True
-        return False
-
-def validate_email(email):
-        user = User.query.filter_by(email=email).first()
-        if user is not None:
-            return True
-        return False
+@app.route('/explore')
+@login_required
+def explore():
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return_posts =[]
+    for post in posts:
+        return_posts.append(
+            {
+                "user_id":post.user_id,
+                "body":post.body,
+                "user_name":User.query.filter_by(id=post.user_id).first().username
+            }
+        )
+    return json.dumps({
+        "posts":return_posts
+    })
 
 @app.route('/follow/<username>', methods=['POST'])
 @login_required
@@ -139,23 +156,6 @@ def user(username):
     return json.dumps({
         "posts":return_posts,
         "currentUser":str(user.username)
-    })
-
-@app.route('/explore')
-@login_required
-def explore():
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return_posts =[]
-    for post in posts:
-        return_posts.append(
-            {
-                "user_id":post.user_id,
-                "body":post.body,
-                "user_name":User.query.filter_by(id=post.user_id).first().username
-            }
-        )
-    return json.dumps({
-        "posts":return_posts
     })
 
 @app.route('/reset_password_request/<email>', methods=['GET', 'POST'])
