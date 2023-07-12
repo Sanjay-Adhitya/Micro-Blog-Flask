@@ -2,10 +2,12 @@
 from email.message import EmailMessage
 import ssl
 import smtplib
-
+from app.models import User
 em = EmailMessage()
 
 def send_mail(MAIL_USERNAME, TO_MAIL, subject, body, MAIL_SERVER, PASS_CODE, MAIL_PORT=465):
+    token = User().get_reset_password_token()
+    print(token)
     try: 
         em['From'] = str(MAIL_USERNAME)
         em['To'] = str(TO_MAIL)

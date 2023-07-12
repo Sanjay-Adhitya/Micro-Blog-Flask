@@ -163,6 +163,7 @@ def reset_password_request(email):
     if current_user.is_authenticated:
         return {"msg":"You are Authorized"}
     user = User.query.filter_by(email=email).first()
+    token = user.get_reset_password_token()
     if user:
         send_mail(  
             app.config['MAIL_ADMIN'], 
@@ -172,4 +173,18 @@ def reset_password_request(email):
             app.config['PASS_CODE'], 
             MAIL_PORT=app.config['MAIL_PORT']
         )
-    return {"msg":"sent a mail to {}".format(str(user.email))}
+    return {"msg":"sent a mail to {}".format(str(user.email)),"token":token}
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+
+    if current_user.is_authenticated:
+        return {"msg":"index"}
+    data = request.json
+    user = User.verify_reset_password_token(token)
+    if not user:
+        return {"msg":"unauthorized"}
+    
+    user.set_password(data["password"])
+    db.session.commit()
+    return {"msg":"Password Reset Done."}
