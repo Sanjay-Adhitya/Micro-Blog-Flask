@@ -15,7 +15,7 @@ login = LoginManager(app)
 import logging
 from logging.handlers import SMTPHandler
 
-from app import routes, models, errors
+from app import routes, models
 
 # print(app.debug)
 # if not app.debug:

@@ -28,6 +28,8 @@ def validate_email(email):
 
 @app.route('/')
 def index():
+    if not current_user.is_authenticated:
+        return {"msg":"You are Authorized"}
     posts = current_user.followed_posts().all()
     # page = request.args.get('page', 1, type=int)
     # posts = current_user.followed_posts().paginate(
@@ -101,6 +103,8 @@ def get_all_user():
 @app.route('/explore')
 @login_required
 def explore():
+    if not current_user.is_authenticated:
+        return {"msg":"You are Authorized"}
     posts = Post.query.order_by(Post.timestamp.desc()).all()
     return_posts =[]
     for post in posts:
@@ -188,3 +192,43 @@ def reset_password(token):
     user.set_password(data["password"])
     db.session.commit()
     return {"msg":"Password Reset Done."}
+
+@app.route('/user/<user_id>/post/<post_id>')
+def get_post_with_id(user_id, post_id):
+
+    if not current_user.is_authenticated:
+        return {"msg":"You are Authorized"}
+    
+    post = Post.query.filter_by(user_id=user_id, id=post_id).first()
+    data = {
+        "body":post.body
+    }
+    return data
+
+@app.route('/user/<user_id>', methods=['POST'])
+def create_post(user_id):
+
+    post_data = request.json
+    if not current_user.is_authenticated:
+        return {"msg":"You are not Authorized"}
+    
+    post = Post(
+        body=post_data["body"], user_id=user_id
+    )
+    db.session.add(post)
+    db.session.commit()
+    return {}
+
+@app.route('/user/<user_id>/post/<post_id>', methods=['PUT'])
+def edit_post(user_id, post_id):
+
+    post_data = request.json
+    if not current_user.is_authenticated:
+        return {"msg":"You are not Authorized"}
+
+    current_post =  Post.query.filter_by(user_id=user_id, id=post_id).first()
+
+    current_post.body = post_data["body"]
+    db.session.commit()
+    return {}
+
