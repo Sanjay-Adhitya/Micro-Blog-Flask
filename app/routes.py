@@ -168,7 +168,7 @@ def reset_password_request(email):
         send_mail(  
             app.config['MAIL_ADMIN'], 
             user.email, app.config['PASS_RESET_SUB'], 
-            app.config['PASS_RESET_BODY'],
+            token,
             app.config['MAIL_SERVER'], 
             app.config['PASS_CODE'], 
             MAIL_PORT=app.config['MAIL_PORT']
