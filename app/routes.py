@@ -160,36 +160,36 @@ def user(username):
         "currentUser":str(user.username)
     })
 
-# @app.route('/reset_password_request/<email>', methods=['GET', 'POST'])
-# def reset_password_request(email):
-#     if current_user.is_authenticated:
-#         return {"msg":"You are Authorized"}
-#     user = User.query.filter_by(email=email).first()
-#     token = user.get_reset_password_token()
-#     if user:
-#         send_mail(  
-#             app.config['MAIL_ADMIN'], 
-#             user.email, app.config['PASS_RESET_SUB'], 
-#             token,
-#             app.config['MAIL_SERVER'], 
-#             app.config['PASS_CODE'], 
-#             MAIL_PORT=app.config['MAIL_PORT']
-#         )
-#     return {"msg":"sent a mail to {}".format(str(user.email)),"token":token}
+@app.route('/reset_password_request/<email>', methods=['GET', 'POST'])
+def reset_password_request(email):
+    if current_user.is_authenticated:
+        return {"msg":"You are Authorized"}
+    user = User.query.filter_by(email=email).first()
+    token = user.get_reset_password_token()
+    if user:
+        send_mail(  
+            app.config['MAIL_ADMIN'], 
+            user.email, app.config['PASS_RESET_SUB'], 
+            token,
+            app.config['MAIL_SERVER'], 
+            app.config['PASS_CODE'], 
+            MAIL_PORT=app.config['MAIL_PORT']
+        )
+    return {"msg":"sent a mail to {}".format(str(user.email)),"token":token}
 
-# @app.route('/reset_password/<token>', methods=['GET', 'POST'])
-# def reset_password(token):
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
 
-#     if current_user.is_authenticated:
-#         return {"msg":"index"}
-#     data = request.json
-#     user = User.verify_reset_password_token(token)
-#     if not user:
-#         return {"msg":"unauthorized"}
+    if current_user.is_authenticated:
+        return {"msg":"index"}
+    data = request.json
+    user = User.verify_reset_password_token(token)
+    if not user:
+        return {"msg":"unauthorized"}
     
-#     user.set_password(data["password"])
-#     db.session.commit()
-#     return {"msg":"Password Reset Done."}
+    user.set_password(data["password"])
+    db.session.commit()
+    return {"msg":"Password Reset Done."}
 
 @app.route('/user/<user_id>/post/<post_id>')
 def get_post_with_id(user_id, post_id):
@@ -230,16 +230,16 @@ def edit_post(user_id, post_id):
     db.session.commit()
     return {"msg":"edited successfully"}
 
-# @app.route('/recuirter/resume_request', methods=['post'])
-# def send_resume():
-#     to_email = request.json["email"]
-#     resp = send_mail(  
-#             app.config['MAIL_ADMIN'], 
-#             to_email, "Sanjay Adhitya's Profile", 
-#             "Sanjay Adhitya's Profile",
-#             app.config['MAIL_SERVER'], 
-#             app.config['PASS_CODE'], 
-#             MAIL_PORT=app.config['MAIL_PORT'],
-#             attachment= True
-#         )
-#     return {"value":str(resp)}
+@app.route('/recuirter/resume_request', methods=['post'])
+def send_resume():
+    to_email = request.json["email"]
+    resp = send_mail(  
+            app.config['MAIL_ADMIN'], 
+            to_email, "Sanjay Adhitya's Profile", 
+            "Sanjay Adhitya's Profile",
+            app.config['MAIL_SERVER'], 
+            app.config['PASS_CODE'], 
+            MAIL_PORT=app.config['MAIL_PORT'],
+            attachment= True
+        )
+    return {"value":str(resp)}
