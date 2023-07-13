@@ -142,7 +142,9 @@ def unfollow(username):
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    posts = user.followed_posts().all()
+    print(user)
+    posts = Post().per_user_posts(user)
+    print(posts)
     return_posts = []
     for post in posts:
         return_posts.append(
