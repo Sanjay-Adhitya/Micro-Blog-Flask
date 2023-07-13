@@ -1,4 +1,4 @@
-import json, os
+import json
 from datetime import datetime
 
 from flask_login import current_user, login_user, logout_user, login_required
@@ -31,10 +31,6 @@ def index():
     if not current_user.is_authenticated:
         return {"msg":"You are Authorized"}
     posts = current_user.followed_posts().all()
-    # page = request.args.get('page', 1, type=int)
-    # posts = current_user.followed_posts().paginate(
-    #     page=page, per_page=app.config['POSTS_PER_PAGE'], 
-    #     error_out=False).items
     return_posts = []
     for post in posts:
         return_posts.append(
@@ -217,7 +213,7 @@ def create_post(user_id):
     )
     db.session.add(post)
     db.session.commit()
-    return {}
+    return {"msg":"created successfully"}
 
 @app.route('/user/<user_id>/post/<post_id>', methods=['PUT'])
 def edit_post(user_id, post_id):
@@ -230,5 +226,5 @@ def edit_post(user_id, post_id):
 
     current_post.body = post_data["body"]
     db.session.commit()
-    return {}
+    return {"msg":"edited successfully"}
 

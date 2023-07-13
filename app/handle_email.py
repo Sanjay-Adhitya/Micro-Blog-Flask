@@ -14,7 +14,7 @@ def send_mail(MAIL_USERNAME, TO_MAIL, subject, body, MAIL_SERVER, PASS_CODE, MAI
         em['Subject'] = str(subject)
         em.set_content(body)
         ssl_cxt = ssl.create_default_context()
-        with smtplib.SMTP_SSL(str(MAIL_SERVER), 465, context=ssl_cxt) as smpt:
+        with smtplib.SMTP_SSL(str(MAIL_SERVER), MAIL_PORT, context=ssl_cxt) as smpt:
             smpt.login(str(MAIL_USERNAME), str(PASS_CODE))
             smpt.sendmail(
                 MAIL_USERNAME, TO_MAIL, em.as_string()
@@ -24,13 +24,3 @@ def send_mail(MAIL_USERNAME, TO_MAIL, subject, body, MAIL_SERVER, PASS_CODE, MAI
         print(e)
         return False
 
-
-
-# from flask_mail import Message
-# from app import mail
-
-# def send_email(subject, sender, recipients, text_body, html_body):
-#     msg = Message(subject, sender=sender, recipients=recipients)
-#     msg.body = text_body
-#     msg.html = html_body
-#     mail.send(msg)
