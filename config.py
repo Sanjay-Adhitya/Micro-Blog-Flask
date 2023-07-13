@@ -2,7 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
-    
+    PASS_RESET_SUB= "PAssword Reset Mail"
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
     print(os.environ.get('DATABASE_URL'))
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
