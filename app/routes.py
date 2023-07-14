@@ -29,7 +29,7 @@ def validate_email(email):
 @app.route('/')
 def index():
     if not current_user.is_authenticated:
-        return {"msg":"You are Authorized"}
+        return {"msg":"You are Unauthorized"}
     posts = current_user.followed_posts().all()
     return_posts = []
     for post in posts:
@@ -52,7 +52,7 @@ def login():
     user_exists = User.query.filter_by(username=user_data["username"]).first()
 
     if user_exists is None or not user_exists.check_password(user_data["password"]):
-        return {"msg":"Unauthorized"}
+        return {"msg":"You are Unauthorized","err":"User name or password mismatch"}
 
     login_user(user_exists, remember=user_data["remember_me_flag"])
     # return redirect('/')
@@ -62,7 +62,6 @@ def login():
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    print(current_user)
     logout_user()
     return {"msg":"logged out"}
 
@@ -100,7 +99,7 @@ def get_all_user():
 @login_required
 def explore():
     if not current_user.is_authenticated:
-        return {"msg":"You are Authorized"}
+        return {"msg":"You are Unauthorized"}
     posts = Post.query.order_by(Post.timestamp.desc()).all()
     return_posts =[]
     for post in posts:
@@ -120,7 +119,7 @@ def explore():
 def follow(username):
     # get user obj from name
     user = User.query.filter_by(username=username).first()
-    if user is None:return {"msg":"invalid"}
+    if user is None:return {"msg":"invalid Username"}
     if user == current_user:return {"msg":"You cannot follow yourself!"}
     current_user.follow(user)
     db.session.commit()
@@ -163,7 +162,7 @@ def user(username):
 @app.route('/reset_password_request/<email>', methods=['GET', 'POST'])
 def reset_password_request(email):
     if current_user.is_authenticated:
-        return {"msg":"You are Authorized"}
+        return {"msg":"You are Unauthorized"}
     user = User.query.filter_by(email=email).first()
     token = user.get_reset_password_token()
     if user:
@@ -185,7 +184,7 @@ def reset_password(token):
     data = request.json
     user = User.verify_reset_password_token(token)
     if not user:
-        return {"msg":"unauthorized"}
+        return {"msg":"You are Unauthorized"}
     
     user.set_password(data["password"])
     db.session.commit()
@@ -195,7 +194,7 @@ def reset_password(token):
 def get_post_with_id(user_id, post_id):
 
     if not current_user.is_authenticated:
-        return {"msg":"You are Authorized"}
+        return {"msg":"You are Unauthorized"}
     
     post = Post.query.filter_by(user_id=user_id, id=post_id).first()
     data = {
@@ -208,7 +207,7 @@ def create_post(user_id):
 
     post_data = request.json
     if not current_user.is_authenticated:
-        return {"msg":"You are not Authorized"}
+        return {"msg":"You are Unauthorized"}
     
     post = Post(
         body=post_data["body"], user_id=user_id
@@ -222,7 +221,7 @@ def edit_post(user_id, post_id):
 
     post_data = request.json
     if not current_user.is_authenticated:
-        return {"msg":"You are not Authorized"}
+        return {"msg":"You are Unauthorized"}
 
     current_post =  Post.query.filter_by(user_id=user_id, id=post_id).first()
 
